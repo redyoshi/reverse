@@ -1,0 +1,399 @@
+function sum(t, n) {
+    woo = {}
+    woo.reg = []
+    if (t) {
+        reset();
+        write(t);
+    }
+
+    _fill()
+
+    for (var i = 0; i < woo.chunk.length; i += 64)
+        _compress(woo.chunk.slice(i, i + 64));
+
+    var o = null;
+
+    if (n == "hex") {
+        o = "";
+        for (i = 0; i < 8; i++)
+            o += se(woo.reg[i].toString(16), 8, "0");
+
+    } else for (o = new Array(32), i = 0; i < 8; i++) {
+        var c = woo.reg[i];
+        o[4 * i + 3] = (255 & c) >>> 0;
+        c >>>= 8;
+        o[4 * i + 2] = (255 & c) >>> 0;
+        c >>>= 8;
+        o[4 * i + 1] = (255 & c) >>> 0;
+        c >>>= 8;
+        o[4 * i] = (255 & c) >>> 0;
+    }
+
+    reset()
+
+    // console.log(woo.reg)
+    // console.log(woo.chunk)
+    // console.log(woo.size)
+
+    return o;
+
+    function de(e, r) {
+        return (e << (r %= 32) | e >>> 32 - r) >>> 0;
+    }
+
+    function he(e, r, t, n) {
+        return 0 <= e && e < 16 ? (r ^ t ^ n) >>> 0 : 16 <= e && e < 64 ? (r & t | r & n | t & n) >>> 0 : (console.error("invalid j for bool function FF"), 0);
+    }
+
+    function ve(e, r, t, n) {
+        return 0 <= e && e < 16 ? (r ^ t ^ n) >>> 0 : 16 <= e && e < 64 ? (r & t | ~r & n) >>> 0 : (console.error("invalid j for bool function GG"), 0);
+    }
+
+    function pe(e) {
+        return 0 <= e && e < 16 ? 2043430169 : 16 <= e && e < 64 ? 2055708042 : void console["error"]("invalid j for constant Tj");
+    }
+
+    function _compress(t) {
+        for (var f = function (e) {
+            for (var r = new Array(132), t = 0; t < 16; t++) {
+                r[t] = e[4 * t] << 24;
+                r[t] |= e[4 * t + 1] << 16;
+                r[t] |= e[4 * t + 2] << 8;
+                r[t] |= e[4 * t + 3];
+                r[t] >>>= 0;
+            }
+
+            for (var n = 16; n < 68; n++) {
+                var a = r[n - 16] ^ r[n - 9] ^ de(r[n - 3], 15);
+                a = a ^ de(a, 15) ^ de(a, 23);
+                r[n] = (a ^ de(r[n - 13], 7) ^ r[n - 6]) >>> 0;
+            }
+
+            for (n = 0; n < 64; n++) r[n + 68] = (r[n] ^ r[n + 4]) >>> 0;
+
+            return r;
+        }(t), i = woo.reg["slice"](0), o = 0; o < 64; o++) {
+            var c = de(i[0], 12) + i[4] + de(pe(o), o);
+            var s = ((c = de(c = (4294967295 & c) >>> 0, 7)) ^ de(i[0], 12)) >>> 0;
+            var u = he(o, i[0], i[1], i[2]);
+            u = (4294967295 & (u = u + i[3] + s + f[o + 68])) >>> 0;
+            var b = ve(o, i[4], i[5], i[6]);
+            b = (4294967295 & (b = b + i[7] + c + f[o])) >>> 0;
+            i[3] = i[2];
+            i[2] = de(i[1], 9);
+            i[1] = i[0];
+            i[0] = u;
+            i[7] = i[6];
+            i[6] = de(i[5], 19);
+            i[5] = i[4];
+            i[4] = (b ^ de(b, 9) ^ de(b, 17)) >>> 0;
+        }
+
+        for (var l = 0; l < 8; l++)
+            woo.reg[l] = (woo.reg[l] ^ i[l]) >>> 0;
+    }
+
+    function _fill() {
+        var a = 8 * woo.size;
+        var f = woo.chunk.push(128) % 64;
+
+        for (64 - f < 8 && (f -= 64); f < 56; f++)
+            woo.chunk["push"](0);
+
+        for (var i = 0; i < 4; i++) {
+            var o = Math["floor"](a / 4294967296);
+            woo.chunk["push"](o >>> 8 * (3 - i) & 255);
+        }
+
+        for (i = 0; i < 4; i++)
+            woo.chunk.push(a >>> 8 * (3 - i) & 255);
+    }
+
+    function write(e) {
+        var a;
+
+        if ("string" == typeof e) {
+            a = function (e) {
+                var n = encodeURIComponent(e)["replace"](/%([0-9A-F]{2})/g, function (e, r) {
+                    return String["fromCharCode"]("0x" + r);
+                });
+                var a = new Array(n.length);
+                return Array.prototype["forEach"]["call"](n, function (e, t) {
+                    a[t] = e["charCodeAt"](0);
+                }), a;
+
+            }(e);
+        } else {
+            a = e;
+        }
+
+        woo.size += a.length;
+        var f = 64 - woo.chunk.length;
+        if (a.length < f)
+            woo.chunk = woo.chunk.concat(a);
+        else for (woo.chunk = woo.chunk.concat(a.slice(0, f)); woo.chunk.length >= 64;) {
+            _compress(woo.chunk);
+
+            if (f < a.length) {
+                woo.chunk = a.slice(f, Math.min(f + 64, a.length));
+            } else {
+                woo.chunk = [];
+            }
+
+            f += 64;
+        }
+    }
+
+    function reset() {
+        woo.reg[0] = 1937774191;
+        woo.reg[1] = 1226093241;
+        woo.reg[2] = 388252375;
+        woo.reg[3] = 3666478592;
+        woo.reg[4] = 2842636476;
+        woo.reg[5] = 372324522;
+        woo.reg[6] = 3817729613;
+        woo.reg[7] = 2969243214;
+        woo.chunk = [];
+        woo.size = 0;
+    }
+}
+
+b = []
+b[1] = 0
+b[2] = 1
+b[3] = 14
+b[4] = "device_platform=webapp&aid=6383&channel=channel_pc_web&sec_user_id=MS4wLjABAAAA7Ip2_8CQWacsOkgt6TtazZWFXU3dML8JXQekX2nR104&max_cursor=0&locate_query=false&show_live_replay_strategy=1&need_time_list=1&time_list_query=0&whale_cut_token=&cut_version=1&count=18&publish_video_strategy_type=2&update_version_code=170400&pc_client_type=1&version_code=290100&version_name=29.1.0&cookie_enabled=true&screen_width=1512&screen_height=982&browser_language=en-US&browser_platform=MacIntel&browser_name=Chrome&browser_version=91.0.4472.114&browser_online=true&engine_name=Blink&engine_version=91.0.4472.114&os_name=Mac+OS&os_version=10.15.7&cpu_core_num=8&device_memory=8&platform=PC&downlink=10&effective_type=4g&round_trip_time=50&webid=7375515141922866726&msToken="
+// b[4] = "device_platform=webapp&aid=6383&channel=channel_pc_web&sec_user_id=MS4wLjABAAAAje-ZcO2V99l326LcGPMeFhglwdsGVK-peATcx2_7pwWB0Or9arRJkTtBgNUkgibc&max_cursor=1711274989000&locate_query=false&show_live_replay_strategy=1&need_time_list=0&time_list_query=0&whale_cut_token=&cut_version=1&count=18&publish_video_strategy_type=2&update_version_code=170400&pc_client_type=1&version_code=290100&version_name=29.1.0&cookie_enabled=true&screen_width=1512&screen_height=982&browser_language=en-US&browser_platform=MacIntel&browser_name=Chrome&browser_version=91.0.4472.114&browser_online=true&engine_name=Blink&engine_version=91.0.4472.114&os_name=Mac+OS&os_version=10.15.7&cpu_core_num=8&device_memory=8&platform=PC&downlink=10&effective_type=4g&round_trip_time=50&webid=7357944845149128231&verifyFp=verify_lvutel3c_16b7e520_4565_565e_8ab6_0a052735b35c&fp=verify_lvutel3c_16b7e520_4565_565e_8ab6_0a052735b35c&msToken=WZ_pUQH7NG-ThwQydKq2GGJb1zuhfTF4hzGhUagvWYF4sO5joKIKC392rSHBkMrRpE3LkS2XVP2xzy9rEv_PNSpqGPOz148V9184nZ2Xc67AkrbWOdcvmayHB_qMkY10"
+b[12] = sum(sum(b[4] + "cus"))
+b[13] = sum(sum("cus"))
+b[15] = [6, 53, 3, 83, 76, 171, 26, 5, 239, 16, 226, 182, 248, 138, 224, 191, 6, 81, 236, 92, 123, 106, 231, 253, 244, 220, 182, 137, 3, 219, 109, 152] //ua生成
+b[16] = new Date().getTime()
+b[10] = new Date().getTime()
+b[18] = 44
+b[19] = [1, 0, 1, 5]
+
+b[20] = b[10] >> 24 & 255
+b[21] = b[10] >> 16 & 255
+b[22] = b[10] >> 8 & 255
+b[23] = b[10] & 255
+b[24] = b[10] / 256 / 256 / 256 / 256 >> 0
+b[25] = b[10] / 256 / 256 / 256 / 256 / 256 >> 0
+
+b[26] = b[1] >> 24 & 255
+b[27] = b[1] >> 16 & 255
+b[28] = b[1] >> 8 & 255
+b[29] = b[1] & 255
+
+b[30] = b[2] / 256 & 255
+b[31] = b[2] % 256 & 255
+b[32] = b[2] >> 24 & 255
+b[33] = b[2] >> 16 & 255
+
+b[34] = b[3] >> 24 & 255
+b[35] = b[3] >> 16 & 255
+b[36] = b[3] >> 8 & 255
+b[37] = b[3] & 255
+
+b[38] = b[12][21]
+b[39] = b[12][22]
+b[40] = b[13][21]
+b[41] = b[13][22]
+b[42] = b[15][23]
+b[43] = b[15][24]
+
+b[44] = b[16] >> 24 & 255
+b[45] = b[16] >> 16 & 255
+b[46] = b[16] >> 8 & 255
+b[47] = b[16] & 255
+
+b[48] = 3
+b[49] = b[16] / 256 / 256 / 256 / 256 >> 0
+b[50] = b[16] / 256 / 256 / 256 / 256 / 256 >> 0
+
+b[51] = 6241
+b[52] = 6241 >> 24 & 255
+b[53] = 6241 >> 16 & 255
+b[54] = 6241 >> 8 & 255
+b[55] = 6241 & 255
+
+b[56] = 6383
+b[57] = 6383 & 255
+b[58] = 6383 >> 8 & 255
+b[59] = 6383 >> 16 & 255
+b[60] = 6383 >> 24 & 255
+
+b[61] = {
+    "innerWidth": 1271,
+    "innerHeight": 744,
+    "outerWidth": 1512,
+    "outerHeight": 855,
+    "screenX": 0,
+    "screenY": 38,
+    "pageXOffset": 0,
+    "pageYOffset": 0,
+    "availWidth": 1512,
+    "availHeight": 855,
+    "sizeWidth": 1512,
+    "sizeHeight": 982,
+    "clientWidth": 1271,
+    "clientHeight": 744,
+    "colorDepth": 30,
+    "pixelDepth": 30,
+    "platform": "MacIntel"
+}
+b[62] = "1271|744|1512|855|0|38|0|0|1512|855|1512|982|1271|744|30|30|MacIntel"
+b[63] = [49, 50, 55, 49, 124, 55, 52, 52, 124, 49, 53, 49, 50, 124, 56, 53, 53, 124, 48, 124, 51, 56, 124, 48, 124, 48, 124, 49, 53, 49, 50, 124, 56, 53, 53, 124, 49, 53, 49, 50, 124, 57, 56, 50, 124, 49, 50, 55, 49, 124, 55, 52, 52, 124, 51, 48, 124, 51, 48, 124, 77, 97, 99, 73, 110, 116, 101, 108]
+
+b[64] = b[63].length
+b[65] = b[64] & 255
+b[66] = b[64] >> 8 & 255
+b[67] = ""
+b[68] = []
+b[69] = b[68].length
+b[70] = b[69] & 255
+b[71] = b[69] >> 8 & 255
+
+b[72] = 44 ^ b[20] ^ b[26] ^ b[30] ^ b[34] ^ b[38] ^ b[40] ^ b[42] ^ b[21] ^ b[27] ^ b[31] ^ b[35] ^ b[39] ^ b[41] ^ b[43] ^ b[22] ^ b[28] ^ b[32] ^ b[36] ^ b[23] ^ b[29] ^ b[33] ^ b[37] ^ b[44] ^ b[45] ^ b[46] ^ b[47] ^ b[48] ^ b[49] ^ b[50] ^ b[24] ^ b[25] ^ b[52] ^ b[53] ^ b[54] ^ b[55] ^ b[57] ^ b[58] ^ b[59] ^ b[60] ^ b[65] ^ b[66] ^ b[70] ^ b[71]
+
+arr1_index_in_b = [18, 20, 52, 26, 30, 34, 58, 38, 40, 53, 42, 21, 27, 54, 55, 31, 35, 57, 39, 41, 43, 22, 28, 32, 60, 36, 23, 29, 33, 37, 44, 45, 59, 46, 47, 48, 49, 50, 24, 25, 65, 66, 70, 71]
+arr1 = []
+for (let i of arr1_index_in_b) {
+    arr1.push(b[i])
+}
+
+
+
+function enc1(source_text) {
+    // source_text = ",\u0000\u0000\u0000\u0000\u0018¦:\u0000ý=\u0000\u0018a\u0001\u0000ï93ôÙ\u0000\u0000\u0000\u0000À\u0000\u0000\u000e=\u0000ÙÀ\u0003Ə\u0001Ə\u0001D\u0000\u0000\u00001271|744|1512|855|0|38|0|0|1512|855|1512|982|1271|744|30|30|MacIntelu"
+    a = Array.from({length: 256}, (_, i) => i);
+    x = 0
+    for (let i = 0; i < 256; i++) {
+        x += a[i];
+        x += 121;
+        x = x % 256;
+        temp = a[i];
+        a[i] = a[x];
+        a[x] = temp;
+    }
+
+    x = 0
+    res = ""
+    b = []
+    for (let i = 0; i < source_text.length; i++) {
+        j = i + 1
+        x += a[j]
+        x = x % 256
+
+        temp = a[j];
+        a[j] = a[x];
+        a[x] = temp;
+
+        v1 = source_text.charCodeAt(i)
+        v1 = v1 ^ a[(a[j] + a[x]) % 256]
+        b.push(v1)
+        res += String.fromCharCode(v1)
+    }
+
+    // console.log(JSON.stringify(b))
+    return res
+}
+
+function enc2(source_text) {
+    function ran1() {
+        let arr = []
+        random = Math.random() * 10000
+        num1 = random & 255
+        num2 = random >> 8 & 255
+        arr.push((num1 & 170) | (3 & 85))
+        arr.push((num1 & 85) | (3 & 170))
+        arr.push((num2 & 170) | (45 & 85))
+        arr.push((num2 & 85) | (45 & 170))
+        return String.fromCharCode.apply(null, arr);
+    }
+
+    function ran2() {
+        let arr = []
+        random = Math.random() * 10000
+        num1 = random & 255
+        num2 = random >> 8 & 255
+        arr.push((num1 & 170) | (1 & 85))
+        arr.push((num1 & 85) | (1 & 170))
+        arr.push((num2 & 170) | (0 & 85))
+        arr.push((num2 & 85) | (0 & 170))
+        return String.fromCharCode.apply(null, arr);
+    }
+
+    function ran3() {
+        let arr = []
+        random = Math.random() * 10000
+        num1 = random & 255
+        num2 = random >> 8 & 255
+        arr.push((num1 & 170) | (1 & 85))
+        arr.push((num1 & 85) | (1 & 170))
+        arr.push((num2 & 170) | (5 & 85))
+        arr.push((num2 & 85) | (5 & 170))
+        return String.fromCharCode.apply(null, arr);
+    }
+
+    pre = ran1() + ran2() + ran3()
+    source_text = pre + source_text
+
+    key = "Dkdpgh2ZmsQB80/MfvV36XI1R45-WUAlEixNLwoqYTOPuzKFjJnry79HbGcaStCe"
+
+    n = Math.ceil(source_text.length / 3)
+    encrypted_text = ""
+    equal_mount = 1
+
+    for (let i = 0; i < n; i++) {
+        c = source_text.charCodeAt(i * 3) & 255
+        c = c << 16
+        equal_mount = 2
+
+        if (i * 3 + 1 < source_text.length) {
+            cc = source_text.charCodeAt(i * 3 + 1) & 255
+            cc = cc << 8
+            c = c | cc
+            equal_mount = 1
+        }
+
+        if (i * 3 + 2 < source_text.length) {
+            cc = source_text.charCodeAt(i * 3 + 2) & 255
+            c = c | cc
+            equal_mount = 0
+        }
+
+
+        index = (c & 16515072) >> 18
+        encrypted_text += key[index]
+
+        index = (c & 258048) >> 12
+        encrypted_text += key[index]
+
+
+        if (equal_mount < 2) {
+            index = (c & 4032) >> 6
+            encrypted_text += key[index]
+        }
+
+        if (equal_mount < 1) {
+            index = c & 63
+            encrypted_text += key[index]
+        }
+    }
+
+    for (; equal_mount > 0; equal_mount--) {
+        encrypted_text += "="
+    }
+
+    return encrypted_text
+}
+
+t = arr1.concat(b[63])
+t.push(b[72])
+
+// w1 = ",Q\u0000\u0000\u0000\u0000\u0018¸:\u0000ýh\u0000\u0018a\u0001\u0000ï*3ôõ\u0000\u0000\u0000\u00002\u0000\u0000\u000eQh\u0000½\u0003Ə\u0001Ə\u0001B\u0000\u0000\u0000728|744|1512|855|0|38|0|0|1512|855|1512|982|915|738|30|30|MacIntel"
+w1 = String.fromCharCode(...t)
+w1 = enc1(w1)
+w1 = enc2(w1)
+console.log(w1)
+console.log(w1.length)
